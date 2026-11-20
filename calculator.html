@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>계산기</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, "Apple SD Gothic Neo", sans-serif;
+      background: #f2f4f8;
+      display: flex;
+      justify-content: center;
+      padding: 60px 16px;
+      margin: 0;
+    }
+    .calc {
+      background: #fff;
+      width: 100%;
+      max-width: 320px;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.08);
+    }
+    #display {
+      background: #1e2230;
+      color: #fff;
+      text-align: right;
+      font-size: 32px;
+      padding: 18px 14px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+      min-height: 68px;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    .keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    button {
+      border: none;
+      border-radius: 8px;
+      padding: 16px 0;
+      font-size: 18px;
+      background: #eef0f5;
+      cursor: pointer;
+    }
+    button:active { filter: brightness(.92); }
+    button.op { background: #4f6ef7; color: #fff; }
+    button.clear { background: #fde8e8; color: #e5484d; }
+    button.wide { grid-column: span 2; }
+  </style>
+</head>
+<body>
+  <div class="calc">
+    <div id="display">0</div>
+    <div class="keys">
+      <button class="clear" data-action="clear">C</button>
+      <button class="clear" data-action="back">⌫</button>
+      <button class="op" data-op="%">%</button>
+      <button class="op" data-op="÷">÷</button>
+
+      <button data-num="7">7</button>
+      <button data-num="8">8</button>
+      <button data-num="9">9</button>
+      <button class="op" data-op="×">×</button>
+
+      <button data-num="4">4</button>
+      <button data-num="5">5</button>
+      <button data-num="6">6</button>
+      <button class="op" data-op="-">−</button>
+
+      <button data-num="1">1</button>
+      <button data-num="2">2</button>
+      <button data-num="3">3</button>
+      <button class="op" data-op="+">+</button>
+
+      <button class="wide" data-num="0">0</button>
+      <button data-action="dot">.</button>
+      <button class="op" data-action="equals">=</button>
+    </div>
+  </div>
+
+  <script>
+    const display = document.getElementById('display');
+
+    let current = '0';      // 지금 입력 중인 숫자 (문자열)
+    let previous = null;    // 연산자를 누르기 전에 입력한 숫자
+    let operator = null;    // 선택된 연산자
+    let justCalculated = false;
+
+    /**
+     * 두 숫자와 연산자로 결과를 계산합니다.
+     * @param {number} a 앞의 숫자
+     * @param {number} b 뒤의 숫자
+     * @param {string} op '+', '-', '×', '÷', '%' 중 하나
+     * @returns {number|string} 계산 결과 (에러 시 문자열 가능)
+     */
+    function calculate(a, b, op) {
+      // TODO(human): 연산자별 계산을 구현하세요.
+      return b;
+    }
+
+    function update() {
+      display.textContent = current;
+    }
+
+    function inputNumber(n) {
+      if (justCalculated) { current = '0'; justCalculated = false; }
+      current = current === '0' ? n : current + n;
+    }
+
+    function inputDot() {
+      if (justCalculated) { current = '0'; justCalculated = false; }
+      if (!current.includes('.')) current += '.';
+    }
+
+    function chooseOperator(op) {
+      if (operator && previous !== null && !justCalculated) equals();
+      previous = parseFloat(current);
+      operator = op;
+      justCalculated = false;
+      current = '0';
+    }
+
+    function equals() {
+      if (operator === null || previous === null) return;
+      const result = calculate(previous, parseFloat(current), operator);
+      current = String(result);
+      previous = null;
+      operator = null;
+      justCalculated = true;
+    }
+
+    function clearAll() {
+      current = '0'; previous = null; operator = null; justCalculated = false;
+    }
+
+    function backspace() {
+      current = current.length > 1 ? current.slice(0, -1) : '0';
+    }
+
+    document.querySelector('.keys').addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+
+      if (btn.dataset.num !== undefined) inputNumber(btn.dataset.num);
+      else if (btn.dataset.op) chooseOperator(btn.dataset.op);
+      else if (btn.dataset.action === 'dot') inputDot();
+      else if (btn.dataset.action === 'equals') equals();
+      else if (btn.dataset.action === 'clear') clearAll();
+      else if (btn.dataset.action === 'back') backspace();
+
+      update();
+    });
+  </script>
+</body>
+</html>

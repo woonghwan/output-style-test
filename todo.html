@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>투두 리스트</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, "Apple SD Gothic Neo", sans-serif;
+      background: #f2f4f8;
+      display: flex;
+      justify-content: center;
+      padding: 60px 16px;
+      margin: 0;
+    }
+    .app {
+      background: #fff;
+      width: 100%;
+      max-width: 420px;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.08);
+    }
+    h1 { margin: 0 0 16px; font-size: 22px; }
+    form { display: flex; gap: 8px; margin-bottom: 16px; }
+    input[type="text"] {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1px solid #d0d5dd;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    button {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 14px;
+      background: #4f6ef7;
+      color: #fff;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    ul { list-style: none; margin: 0; padding: 0; }
+    li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 4px;
+      border-bottom: 1px solid #eee;
+    }
+    li span { flex: 1; }
+    li.done span { text-decoration: line-through; color: #999; }
+    li button { background: transparent; color: #e5484d; padding: 4px 8px; }
+    .empty { text-align: center; color: #999; padding: 16px 0; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>📝 투두 리스트</h1>
+    <form id="form">
+      <input type="text" id="input" placeholder="할 일을 입력하세요" autocomplete="off">
+      <button type="submit">추가</button>
+    </form>
+    <ul id="list"></ul>
+  </div>
+
+  <script>
+    const form = document.getElementById('form');
+    const input = document.getElementById('input');
+    const list = document.getElementById('list');
+
+    let todos = JSON.parse(localStorage.getItem('todos') || '[]');
+
+    function save() {
+      localStorage.setItem('todos', JSON.stringify(todos));
+    }
+
+    function render() {
+      list.innerHTML = '';
+      if (todos.length === 0) {
+        list.innerHTML = '<div class="empty">할 일이 없습니다 🎉</div>';
+        return;
+      }
+      todos.forEach((todo, i) => {
+        const li = document.createElement('li');
+        if (todo.done) li.classList.add('done');
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = todo.done;
+        checkbox.onchange = () => { todos[i].done = checkbox.checked; save(); render(); };
+
+        const span = document.createElement('span');
+        span.textContent = todo.text; // textContent: XSS 방지
+
+        const del = document.createElement('button');
+        del.textContent = '삭제';
+        del.onclick = () => { todos.splice(i, 1); save(); render(); };
+
+        li.append(checkbox, span, del);
+        list.appendChild(li);
+      });
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (!text) return;
+      todos.push({ text, done: false });
+      input.value = '';
+      save();
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>
